@@ -14,7 +14,7 @@ export class UsuarioRepository {
     });
   }
 
-  async findAllActive(): Promise<Omit<Usuario, "passwordHash">[]> {
+  async findAllActive() {
     return await prisma.usuario.findMany({
       where: { isActive: true },
       select: {
@@ -25,6 +25,11 @@ export class UsuarioRepository {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            ordenesAsignadas: { where: { isActive: true } },
+          },
+        },
       },
       orderBy: { nombre: "asc" },
     });
@@ -37,6 +42,21 @@ export class UsuarioRepository {
     rol: RolUsuario;
   }): Promise<Usuario> {
     return await prisma.usuario.create({
+      data,
+    });
+  }
+
+  async update(
+    id: string,
+    data: {
+      email?: string;
+      nombre?: string;
+      passwordHash?: string;
+      rol?: RolUsuario;
+    }
+  ): Promise<Usuario> {
+    return await prisma.usuario.update({
+      where: { id },
       data,
     });
   }
