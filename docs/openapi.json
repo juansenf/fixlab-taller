@@ -1,0 +1,179 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "FixLab - API de Gestión de Taller Técnico",
+    "description": "API REST para el Proyecto Integrador de Software (Prácticas Profesionalizantes II). Incluye gestión de Clientes, Equipos, Órdenes de Servicio y Usuarios con RBAC y bajas lógicas.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local de Desarrollo"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "fixlab_session",
+        "description": "Cookie HttpOnly de sesión JWT generada al iniciar sesión"
+      }
+    },
+    "schemas": {
+      "Cliente": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "dniCuit": { "type": "string", "example": "30123456" },
+          "nombre": { "type": "string", "example": "Martín Gómez" },
+          "telefono": { "type": "string", "example": "+54 9 11 4455-6677" },
+          "email": { "type": "string", "format": "email", "nullable": true },
+          "direccion": { "type": "string", "nullable": true },
+          "isActive": { "type": "boolean", "example": true },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Equipo": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "clienteId": { "type": "string", "format": "uuid" },
+          "tipo": { "type": "string", "example": "Notebook" },
+          "marca": { "type": "string", "example": "Dell" },
+          "modelo": { "type": "string", "example": "Inspiron 15" },
+          "numeroSerie": { "type": "string", "nullable": true },
+          "accesorios": { "type": "string", "nullable": true },
+          "isActive": { "type": "boolean", "example": true }
+        }
+      },
+      "OrdenServicio": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "numeroOrden": { "type": "string", "example": "OT-2026-0001" },
+          "equipoId": { "type": "string", "format": "uuid" },
+          "tecnicoAsignadoId": { "type": "string", "format": "uuid", "nullable": true },
+          "problemaReportado": { "type": "string" },
+          "diagnostico": { "type": "string", "nullable": true },
+          "estado": {
+            "type": "string",
+            "enum": ["PENDIENTE", "EN_DIAGNOSTICO", "EN_REPARACION", "LISTO_ENTREGA", "ENTREGADO", "CANCELADO"]
+          },
+          "costoEstimado": { "type": "number", "nullable": true },
+          "costoFinal": { "type": "number", "nullable": true },
+          "fechaIngreso": { "type": "string", "format": "date-time" },
+          "fechaEgreso": { "type": "string", "format": "date-time", "nullable": true },
+          "isActive": { "type": "boolean", "example": true }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "summary": "Iniciar Sesión",
+        "description": "Autentica al usuario, verifica hash bcrypt y setea la cookie HttpOnly con JWT.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "admin@fixlab.com" },
+                  "password": { "type": "string", "example": "Admin123!" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sesión iniciada con éxito" },
+          "401": { "description": "Credenciales inválidas" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Cerrar Sesión",
+        "responses": {
+          "200": { "description": "Cookie invalidada" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Obtener perfil del usuario en sesión",
+        "security": [{ "cookieAuth": [] }],
+        "responses": {
+          "200": { "description": "Perfil obtenido" },
+          "401": { "description": "No autenticado" }
+        }
+      }
+    },
+    "/api/clientes": {
+      "get": {
+        "summary": "Listar clientes activos con búsqueda",
+        "parameters": [
+          { "name": "q", "in": "query", "description": "Filtro por nombre, DNI o teléfono", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Lista de clientes" } }
+      },
+      "post": {
+        "summary": "Registrar nuevo cliente",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["dniCuit", "nombre", "telefono"],
+                "properties": {
+                  "dniCuit": { "type": "string", "example": "32123456" },
+                  "nombre": { "type": "string", "example": "Lautaro Benítez" },
+                  "telefono": { "type": "string", "example": "+54 9 11 2233-4455" },
+                  "email": { "type": "string", "example": "lautaro@email.com" },
+                  "direccion": { "type": "string", "example": "Av. Rivadavia 2000" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Cliente creado" } }
+      }
+    },
+    "/api/clientes/{id}": {
+      "get": { "summary": "Obtener detalle de cliente con equipos asociados" },
+      "put": { "summary": "Actualizar cliente" },
+      "delete": { "summary": "Baja lógica de cliente (isActive = false)" }
+    },
+    "/api/equipos": {
+      "get": { "summary": "Listar equipos con cliente propietario y filtro opcional" },
+      "post": { "summary": "Registrar equipo asociado a un cliente activo" }
+    },
+    "/api/equipos/{id}": {
+      "get": { "summary": "Detalle de equipo con historial de órdenes" },
+      "put": { "summary": "Actualizar datos técnicos del equipo" },
+      "delete": { "summary": "Baja lógica de equipo (isActive = false)" }
+    },
+    "/api/ordenes": {
+      "get": { "summary": "Listar órdenes de trabajo filtradas por estado o búsqueda" },
+      "post": { "summary": "Emitir nueva orden con código autogenerado secuencial" }
+    },
+    "/api/ordenes/{id}": {
+      "get": { "summary": "Detalle completo de orden y comprobante" },
+      "put": { "summary": "Actualizar diagnóstico, estado y costos (calcula fecha de entrega)" },
+      "delete": { "summary": "Baja lógica de orden (isActive = false)" }
+    },
+    "/api/usuarios": {
+      "get": { "summary": "Listar usuarios (Exclusivo Administrador, RBAC)" },
+      "post": { "summary": "Crear técnico o administrador (Exclusivo Administrador)" }
+    },
+    "/api/usuarios/{id}": {
+      "put": { "summary": "Modificar usuario y rol (Exclusivo Administrador)" },
+      "delete": { "summary": "Baja lógica de usuario (Exclusivo Administrador)" }
+    }
+  }
+}
