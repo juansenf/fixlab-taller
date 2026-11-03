@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "FixLab API Collection",
+    "description": "Colección completa de endpoints para Thunder Client / Postman del Proyecto Integrador FixLab.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Autenticación (Auth)",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@fixlab.com\",\n  \"password\": \"Admin123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login (Técnico)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tecnico@fixlab.com\",\n  \"password\": \"Tecnico123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Perfil Actual (/me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Clientes (Entidad 1)",
+      "item": [
+        {
+          "name": "Listar Clientes Activos",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/clientes", "host": ["{{baseUrl}}"], "path": ["api", "clientes"] }
+          }
+        },
+        {
+          "name": "Buscar Clientes por Término (?q=)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/clientes?q=Gomez", "host": ["{{baseUrl}}"], "path": ["api", "clientes"], "query": [{ "key": "q", "value": "Gomez" }] }
+          }
+        },
+        {
+          "name": "Crear Cliente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dniCuit\": \"35998877\",\n  \"nombre\": \"Valentina Rossi\",\n  \"telefono\": \"+54 9 11 9988-7766\",\n  \"email\": \"valentina@email.com\",\n  \"direccion\": \"Av. Santa Fe 3421, CABA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/clientes", "host": ["{{baseUrl}}"], "path": ["api", "clientes"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Equipos (Entidad 2)",
+      "item": [
+        {
+          "name": "Listar Equipos",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/equipos", "host": ["{{baseUrl}}"], "path": ["api", "equipos"] }
+          }
+        },
+        {
+          "name": "Crear Equipo",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"REEMPLAZAR_CON_ID_CLIENTE\",\n  \"tipo\": \"Notebook\",\n  \"marca\": \"Lenovo\",\n  \"modelo\": \"IdeaPad 3\",\n  \"numeroSerie\": \"LN-IP3-5544\",\n  \"accesorios\": \"Cargador\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/equipos", "host": ["{{baseUrl}}"], "path": ["api", "equipos"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Órdenes de Servicio (Entidad 3)",
+      "item": [
+        {
+          "name": "Listar Órdenes",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/ordenes", "host": ["{{baseUrl}}"], "path": ["api", "ordenes"] }
+          }
+        },
+        {
+          "name": "Crear Orden de Servicio",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipoId\": \"REEMPLAZAR_CON_ID_EQUIPO\",\n  \"problemaReportado\": \"Pantalla parpadea y teclado no responde\",\n  \"costoEstimado\": 25000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/ordenes", "host": ["{{baseUrl}}"], "path": ["api", "ordenes"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Usuarios (RBAC - Solo Admin)",
+      "item": [
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/usuarios", "host": ["{{baseUrl}}"], "path": ["api", "usuarios"] }
+          }
+        }
+      ]
+    }
+  ]
+}
