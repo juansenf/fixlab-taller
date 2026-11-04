@@ -1,15 +1,16 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "FixLab - API de Gestión de Taller Técnico",
-    "description": "API REST para el Proyecto Integrador de Software (Prácticas Profesionalizantes II). Incluye gestión de Clientes, Equipos, Órdenes de Servicio y Usuarios con RBAC y bajas lógicas.",
+    "title": "FixLab · API REST de Gestión de Taller Técnico",
+    "description": "Documentación interactiva de la API REST del Proyecto Integrador FixLab (Prácticas Profesionalizantes II - 2026).\n\nPermite probar en vivo todas las operaciones del núcleo de negocio (CRUDs con baja lógica), autenticación mediante JWT y control de acceso basado en roles (RBAC).",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:3000",
-      "description": "Servidor Local de Desarrollo"
-    }
+  "tags": [
+    { "name": "01. Autenticación (Auth)", "description": "Endpoints de inicio de sesión, logout y consulta de sesión activa" },
+    { "name": "02. Clientes (Entidad 1)", "description": "Gestión de clientes con baja lógica (isActive) y búsqueda en tiempo real" },
+    { "name": "03. Equipos (Entidad 2)", "description": "Gestión de dispositivos asociados a clientes propietarios" },
+    { "name": "04. Órdenes de Servicio (Entidad 3)", "description": "Control del ciclo de vida técnico, transiciones de estado y cálculo de costos" },
+    { "name": "05. Usuarios y Roles (RBAC)", "description": "Administración de cuentas y asignación de roles (Exclusivo Administrador)" }
   ],
   "components": {
     "securitySchemes": {
@@ -28,8 +29,8 @@
           "dniCuit": { "type": "string", "example": "30123456" },
           "nombre": { "type": "string", "example": "Martín Gómez" },
           "telefono": { "type": "string", "example": "+54 9 11 4455-6677" },
-          "email": { "type": "string", "format": "email", "nullable": true },
-          "direccion": { "type": "string", "nullable": true },
+          "email": { "type": "string", "format": "email", "nullable": true, "example": "martin.gomez@email.com" },
+          "direccion": { "type": "string", "nullable": true, "example": "Av. Corrientes 1234, CABA" },
           "isActive": { "type": "boolean", "example": true },
           "createdAt": { "type": "string", "format": "date-time" }
         }
@@ -41,9 +42,9 @@
           "clienteId": { "type": "string", "format": "uuid" },
           "tipo": { "type": "string", "example": "Notebook" },
           "marca": { "type": "string", "example": "Dell" },
-          "modelo": { "type": "string", "example": "Inspiron 15" },
-          "numeroSerie": { "type": "string", "nullable": true },
-          "accesorios": { "type": "string", "nullable": true },
+          "modelo": { "type": "string", "example": "Inspiron 15 3000" },
+          "numeroSerie": { "type": "string", "nullable": true, "example": "SN-DEL-9988" },
+          "accesorios": { "type": "string", "nullable": true, "example": "Cargador original y funda" },
           "isActive": { "type": "boolean", "example": true }
         }
       },
@@ -54,14 +55,15 @@
           "numeroOrden": { "type": "string", "example": "OT-2026-0001" },
           "equipoId": { "type": "string", "format": "uuid" },
           "tecnicoAsignadoId": { "type": "string", "format": "uuid", "nullable": true },
-          "problemaReportado": { "type": "string" },
-          "diagnostico": { "type": "string", "nullable": true },
+          "problemaReportado": { "type": "string", "example": "No enciende después de corte de luz" },
+          "diagnostico": { "type": "string", "nullable": true, "example": "Corto en línea principal de 19V" },
           "estado": {
             "type": "string",
-            "enum": ["PENDIENTE", "EN_DIAGNOSTICO", "EN_REPARACION", "LISTO_ENTREGA", "ENTREGADO", "CANCELADO"]
+            "enum": ["PENDIENTE", "EN_DIAGNOSTICO", "EN_REPARACION", "LISTO_ENTREGA", "ENTREGADO", "CANCELADO"],
+            "example": "EN_REPARACION"
           },
-          "costoEstimado": { "type": "number", "nullable": true },
-          "costoFinal": { "type": "number", "nullable": true },
+          "costoEstimado": { "type": "number", "nullable": true, "example": 45000 },
+          "costoFinal": { "type": "number", "nullable": true, "example": 45000 },
           "fechaIngreso": { "type": "string", "format": "date-time" },
           "fechaEgreso": { "type": "string", "format": "date-time", "nullable": true },
           "isActive": { "type": "boolean", "example": true }
@@ -72,8 +74,9 @@
   "paths": {
     "/api/auth/login": {
       "post": {
-        "summary": "Iniciar Sesión",
-        "description": "Autentica al usuario, verifica hash bcrypt y setea la cookie HttpOnly con JWT.",
+        "tags": ["01. Autenticación (Auth)"],
+        "summary": "Iniciar Sesión (Login)",
+        "description": "Autentica al usuario mediante email y contraseña, valida credenciales y setea la cookie HttpOnly con JWT.",
         "requestBody": {
           "required": true,
           "content": {
@@ -90,39 +93,46 @@
           }
         },
         "responses": {
-          "200": { "description": "Sesión iniciada con éxito" },
+          "200": { "description": "Inicio de sesión exitoso" },
           "401": { "description": "Credenciales inválidas" }
         }
       }
     },
     "/api/auth/logout": {
       "post": {
-        "summary": "Cerrar Sesión",
+        "tags": ["01. Autenticación (Auth)"],
+        "summary": "Cerrar Sesión (Logout)",
+        "description": "Invalida la cookie de sesión del navegador.",
         "responses": {
-          "200": { "description": "Cookie invalidada" }
+          "200": { "description": "Sesión cerrada correctamente" }
         }
       }
     },
     "/api/auth/me": {
       "get": {
-        "summary": "Obtener perfil del usuario en sesión",
-        "security": [{ "cookieAuth": [] }],
+        "tags": ["01. Autenticación (Auth)"],
+        "summary": "Consultar Perfil en Sesión",
+        "description": "Retorna los datos del usuario actualmente autenticado.",
         "responses": {
-          "200": { "description": "Perfil obtenido" },
+          "200": { "description": "Datos del perfil" },
           "401": { "description": "No autenticado" }
         }
       }
     },
     "/api/clientes": {
       "get": {
-        "summary": "Listar clientes activos con búsqueda",
+        "tags": ["02. Clientes (Entidad 1)"],
+        "summary": "Listar Clientes Activos",
+        "description": "Obtiene la lista de clientes que no están dados de baja lógica. Permite filtrar por nombre, DNI o teléfono.",
         "parameters": [
-          { "name": "q", "in": "query", "description": "Filtro por nombre, DNI o teléfono", "schema": { "type": "string" } }
+          { "name": "q", "in": "query", "description": "Texto de búsqueda (nombre, DNI o teléfono)", "schema": { "type": "string" } }
         ],
         "responses": { "200": { "description": "Lista de clientes" } }
       },
       "post": {
-        "summary": "Registrar nuevo cliente",
+        "tags": ["02. Clientes (Entidad 1)"],
+        "summary": "Registrar Nuevo Cliente",
+        "description": "Crea un nuevo cliente con validación dual (Zod en backend). Si el DNI ya existía pero estaba en baja lógica, lo reactiva.",
         "requestBody": {
           "required": true,
           "content": {
@@ -131,49 +141,222 @@
                 "type": "object",
                 "required": ["dniCuit", "nombre", "telefono"],
                 "properties": {
-                  "dniCuit": { "type": "string", "example": "32123456" },
-                  "nombre": { "type": "string", "example": "Lautaro Benítez" },
-                  "telefono": { "type": "string", "example": "+54 9 11 2233-4455" },
-                  "email": { "type": "string", "example": "lautaro@email.com" },
-                  "direccion": { "type": "string", "example": "Av. Rivadavia 2000" }
+                  "dniCuit": { "type": "string", "example": "35998877" },
+                  "nombre": { "type": "string", "example": "Valentina Rossi" },
+                  "telefono": { "type": "string", "example": "+54 9 11 9988-7766" },
+                  "email": { "type": "string", "example": "valentina@email.com" },
+                  "direccion": { "type": "string", "example": "Av. Santa Fe 3421, CABA" }
                 }
               }
             }
           }
         },
-        "responses": { "201": { "description": "Cliente creado" } }
+        "responses": { "201": { "description": "Cliente registrado exitosamente" } }
       }
     },
     "/api/clientes/{id}": {
-      "get": { "summary": "Obtener detalle de cliente con equipos asociados" },
-      "put": { "summary": "Actualizar cliente" },
-      "delete": { "summary": "Baja lógica de cliente (isActive = false)" }
+      "get": {
+        "tags": ["02. Clientes (Entidad 1)"],
+        "summary": "Consultar Detalle de Cliente",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Detalle con equipos vinculados" } }
+      },
+      "put": {
+        "tags": ["02. Clientes (Entidad 1)"],
+        "summary": "Modificar Cliente",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre": { "type": "string", "example": "Valentina Rossi Actualizada" },
+                  "telefono": { "type": "string", "example": "+54 9 11 1122-3344" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Cliente actualizado" } }
+      },
+      "delete": {
+        "tags": ["02. Clientes (Entidad 1)"],
+        "summary": "Baja Lógica de Cliente",
+        "description": "Inactiva el cliente (isActive = false) manteniendo la integridad referencial para auditoría.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Cliente dado de baja" } }
+      }
     },
     "/api/equipos": {
-      "get": { "summary": "Listar equipos con cliente propietario y filtro opcional" },
-      "post": { "summary": "Registrar equipo asociado a un cliente activo" }
+      "get": {
+        "tags": ["03. Equipos (Entidad 2)"],
+        "summary": "Listar Equipos",
+        "description": "Obtiene equipos activos junto a los datos del cliente propietario.",
+        "parameters": [
+          { "name": "q", "in": "query", "description": "Búsqueda por marca, modelo, serie o cliente", "schema": { "type": "string" } },
+          { "name": "clienteId", "in": "query", "description": "Filtrar equipos de un cliente específico", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Lista de equipos" } }
+      },
+      "post": {
+        "tags": ["03. Equipos (Entidad 2)"],
+        "summary": "Registrar Nuevo Equipo",
+        "description": "Asocia un dispositivo a un cliente existente y activo.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["clienteId", "tipo", "marca", "modelo"],
+                "properties": {
+                  "clienteId": { "type": "string", "example": "UUID_DEL_CLIENTE" },
+                  "tipo": { "type": "string", "example": "Notebook" },
+                  "marca": { "type": "string", "example": "Asus" },
+                  "modelo": { "type": "string", "example": "ZenBook 14" },
+                  "numeroSerie": { "type": "string", "example": "AS-ZB-4422" },
+                  "accesorios": { "type": "string", "example": "Cargador tipo C" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Equipo creado" } }
+      }
     },
     "/api/equipos/{id}": {
-      "get": { "summary": "Detalle de equipo con historial de órdenes" },
-      "put": { "summary": "Actualizar datos técnicos del equipo" },
-      "delete": { "summary": "Baja lógica de equipo (isActive = false)" }
+      "get": {
+        "tags": ["03. Equipos (Entidad 2)"],
+        "summary": "Detalle de Equipo",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Detalle con historial de órdenes" } }
+      },
+      "put": {
+        "tags": ["03. Equipos (Entidad 2)"],
+        "summary": "Modificar Equipo",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Equipo actualizado" } }
+      },
+      "delete": {
+        "tags": ["03. Equipos (Entidad 2)"],
+        "summary": "Baja Lógica de Equipo",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Equipo inactivado" } }
+      }
     },
     "/api/ordenes": {
-      "get": { "summary": "Listar órdenes de trabajo filtradas por estado o búsqueda" },
-      "post": { "summary": "Emitir nueva orden con código autogenerado secuencial" }
+      "get": {
+        "tags": ["04. Órdenes de Servicio (Entidad 3)"],
+        "summary": "Listar Órdenes de Trabajo",
+        "description": "Lista órdenes activas con filtros por estado (PENDIENTE, EN_REPARACION, etc.) y búsqueda de texto.",
+        "parameters": [
+          { "name": "q", "in": "query", "description": "Búsqueda por N° Orden, cliente o falla", "schema": { "type": "string" } },
+          { "name": "estado", "in": "query", "description": "Filtrar por estado técnico", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Lista de órdenes" } }
+      },
+      "post": {
+        "tags": ["04. Órdenes de Servicio (Entidad 3)"],
+        "summary": "Emitir Nueva Orden de Trabajo",
+        "description": "Genera automáticamente el número correlativo oficial (ej. OT-2026-0002) y registra el ingreso.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["equipoId", "problemaReportado"],
+                "properties": {
+                  "equipoId": { "type": "string", "example": "UUID_DEL_EQUIPO" },
+                  "problemaReportado": { "type": "string", "example": "No enciende tras golpe accidental" },
+                  "costoEstimado": { "type": "number", "example": 35000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Orden generada exitosamente" } }
+      }
     },
     "/api/ordenes/{id}": {
-      "get": { "summary": "Detalle completo de orden y comprobante" },
-      "put": { "summary": "Actualizar diagnóstico, estado y costos (calcula fecha de entrega)" },
-      "delete": { "summary": "Baja lógica de orden (isActive = false)" }
+      "get": {
+        "tags": ["04. Órdenes de Servicio (Entidad 3)"],
+        "summary": "Consultar Orden y Comprobante",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Detalle completo para comprobante" } }
+      },
+      "put": {
+        "tags": ["04. Órdenes de Servicio (Entidad 3)"],
+        "summary": "Actualizar Estado y Diagnóstico Técnico",
+        "description": "Permite registrar el diagnóstico, costos y cambiar de estado. Si pasa a ENTREGADO, asigna automáticamente fechaEgreso.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "estado": { "type": "string", "enum": ["PENDIENTE", "EN_DIAGNOSTICO", "EN_REPARACION", "LISTO_ENTREGA", "ENTREGADO", "CANCELADO"], "example": "ENTREGADO" },
+                  "diagnostico": { "type": "string", "example": "Reemplazo de pin de carga y limpieza de placa" },
+                  "costoFinal": { "type": "number", "example": 32000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Orden actualizada" } }
+      },
+      "delete": {
+        "tags": ["04. Órdenes de Servicio (Entidad 3)"],
+        "summary": "Baja Lógica de Orden",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Orden anulada" } }
+      }
     },
     "/api/usuarios": {
-      "get": { "summary": "Listar usuarios (Exclusivo Administrador, RBAC)" },
-      "post": { "summary": "Crear técnico o administrador (Exclusivo Administrador)" }
+      "get": {
+        "tags": ["05. Usuarios y Roles (RBAC)"],
+        "summary": "Listar Usuarios (Solo Admin)",
+        "description": "Exclusivo para rol ADMIN. Retorna la lista de técnicos y administradores con conteo de órdenes asignadas.",
+        "responses": { "200": { "description": "Lista de usuarios" }, "403": { "description": "Acceso denegado (requiere Admin)" } }
+      },
+      "post": {
+        "tags": ["05. Usuarios y Roles (RBAC)"],
+        "summary": "Registrar Usuario / Técnico (Solo Admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nombre", "email", "password", "rol"],
+                "properties": {
+                  "nombre": { "type": "string", "example": "Ignacio Reparador" },
+                  "email": { "type": "string", "example": "ignacio@fixlab.com" },
+                  "password": { "type": "string", "example": "Tecnico123!" },
+                  "rol": { "type": "string", "enum": ["ADMIN", "TECNICO"], "example": "TECNICO" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Usuario creado" }, "403": { "description": "Acceso denegado" } }
+      }
     },
     "/api/usuarios/{id}": {
-      "put": { "summary": "Modificar usuario y rol (Exclusivo Administrador)" },
-      "delete": { "summary": "Baja lógica de usuario (Exclusivo Administrador)" }
+      "put": {
+        "tags": ["05. Usuarios y Roles (RBAC)"],
+        "summary": "Modificar Usuario (Solo Admin)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Usuario actualizado" } }
+      },
+      "delete": {
+        "tags": ["05. Usuarios y Roles (RBAC)"],
+        "summary": "Baja Lógica de Usuario (Solo Admin)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Usuario inactivado" } }
+      }
     }
   }
 }
