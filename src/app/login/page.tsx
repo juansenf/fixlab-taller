@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Wrench, Shield, KeyRound, AlertCircle, Loader2 } from "lucide-react";
+import { Wrench, KeyRound, AlertCircle, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,15 +39,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleFillDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError(null);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4 selection:bg-cyan-500 selection:text-white">
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
+      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm">
         {/* Header con Logo */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="h-14 w-14 rounded-xl bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-4 shadow-lg shadow-cyan-950">
@@ -78,7 +72,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@fixlab.com"
+              placeholder="correo@ejemplo.com"
               className="w-full px-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
             />
           </div>
@@ -115,34 +109,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        {/* Acceso Rápido Demo (Para Evaluación y Docentes) */}
-        <div className="mt-8 pt-6 border-t border-slate-800/80">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-            <Shield className="w-4 h-4 text-cyan-400" />
-            <span>Usuarios de Demostración (Seed)</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => handleFillDemo("admin@fixlab.com", "Admin123!")}
-              className="p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white text-left transition-all"
-            >
-              <div className="font-semibold text-cyan-400">Rol: Administrador</div>
-              <div className="text-[11px] text-slate-500 truncate">admin@fixlab.com</div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleFillDemo("tecnico@fixlab.com", "Tecnico123!")}
-              className="p-2.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white text-left transition-all"
-            >
-              <div className="font-semibold text-emerald-400">Rol: Técnico</div>
-              <div className="text-[11px] text-slate-500 truncate">tecnico@fixlab.com</div>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
