@@ -10,6 +10,7 @@ import {
   UserCog,
   LogOut,
   LayoutDashboard,
+  BookOpen,
 } from "lucide-react";
 import { AuthUser } from "@/lib/jwt";
 
@@ -39,6 +40,7 @@ export default function Navigation({ user }: NavigationProps) {
     ...(user.rol === "ADMIN"
       ? [{ href: "/usuarios", label: "Usuarios / Técnicos", icon: UserCog }]
       : []),
+    { href: "/docs", label: "API Docs (Swagger)", icon: BookOpen, external: true },
   ];
 
   return (
@@ -61,7 +63,24 @@ export default function Navigation({ user }: NavigationProps) {
         <nav className="p-4 space-y-1.5">
           {navLinks.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
+            if (item.external) {
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-cyan-400 hover:bg-slate-800/60 transition-all"
+                >
+                  <Icon className="w-4 h-4 text-slate-400 group-hover:text-cyan-400" />
+                  <span>{item.label}</span>
+                </a>
+              );
+            }
 
             return (
               <Link
