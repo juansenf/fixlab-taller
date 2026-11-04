@@ -455,7 +455,7 @@ export default function OrdenesView({ initialOrdenes, equipos, tecnicos }: Orden
       {/* Modal Crear Orden */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-cyan-400" />
@@ -576,7 +576,7 @@ export default function OrdenesView({ initialOrdenes, equipos, tecnicos }: Orden
       {/* Modal Actualizar Estado / Diagnóstico */}
       {isUpdateModalOpen && activeOrden && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -715,7 +715,7 @@ export default function OrdenesView({ initialOrdenes, equipos, tecnicos }: Orden
       {/* Modal Ver Comprobante / Detalle */}
       {isDetailModalOpen && activeOrden && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 p-8 shadow-2xl">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-8 shadow-2xl">
             {/* Header Comprobante */}
             <div className="flex items-start justify-between pb-6 border-b border-slate-800">
               <div>
